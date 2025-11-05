@@ -13,6 +13,11 @@ import androidx.work.Data
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+// BARU: Import-import yang diperlukan untuk Part 2
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.content.ContextCompat
 
 
 class MainActivity : AppCompatActivity() {
@@ -29,6 +34,15 @@ class MainActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        // BARU: Meminta izin untuk notifikasi (Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 1)
+            }
         }
 
         // Create a constraint of which your workers are bound to.
@@ -77,6 +91,9 @@ class MainActivity : AppCompatActivity() {
             .observe(this) { info ->
                 if (info.state.isFinished) {
                     showResult("Second process is done")
+
+                    // BARU: Panggil service notifikasi setelah worker kedua selesai
+                    launchNotificationService()
                 }
             }
     }
@@ -90,5 +107,26 @@ class MainActivity : AppCompatActivity() {
     // Show the result as toast
     private fun showResult(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    // BARU: Fungsi untuk meluncurkan NotificationService
+    private fun launchNotificationService() {
+        // Observe jika service selesai
+        NotificationService.trackingCompletion.observe(this) { id ->
+            showResult("Process for Notification Channel ID $id is done!")
+        }
+
+        // Membuat Intent untuk start Service
+        val serviceIntent = Intent(this, NotificationService::class.java).apply {
+            putExtra(EXTRA_ID, "001") // Mengirim ID
+        }
+
+        // Memulai foreground service
+        ContextCompat.startForegroundService(this, serviceIntent)
+    }
+
+
+    companion object {
+        const val EXTRA_ID = "Id"
     }
 }
