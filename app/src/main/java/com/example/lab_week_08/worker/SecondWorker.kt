@@ -6,12 +6,10 @@ import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 
-// Nama kelas diubah menjadi SecondWorker
 class SecondWorker(context: Context, workerParams: WorkerParameters) :
     Worker(context, workerParams) {
 
     companion object {
-        // Konstantanya bisa dipakai ulang, tapi untuk kejelasan kita definisikan di sini juga
         const val INPUT_DATA_ID = "inId"
         const val OUTPUT_DATA_ID = "outId"
     }
