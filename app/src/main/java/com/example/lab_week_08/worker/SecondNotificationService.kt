@@ -9,36 +9,32 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import java.lang.IllegalStateException
 
-class NotificationService : Service() {
+class SecondNotificationService : Service() {
 
     private lateinit var notificationBuilder: NotificationCompat.Builder
-
     private lateinit var serviceHandler: Handler
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-
         notificationBuilder = startForegroundService()
-
-        val handlerThread = HandlerThread("SecondThread").apply { start() }
+        val handlerThread = HandlerThread("ThirdThread").apply { start() } // Beda nama thread
         serviceHandler = Handler(handlerThread.looper)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val returnValue = super.onStartCommand(intent, flags, startId)
 
-        val id = intent?.getStringExtra(EXTRA_ID)
+        val id = intent?.getStringExtra(EXTRA_ID_SECOND)
             ?: throw IllegalStateException("Channel ID must be provided")
 
         serviceHandler.post {
-            countDownFromTenToZero(notificationBuilder)
+            countDownFromFiveToZero(notificationBuilder)
 
-            notifyCompletion(id)
+            notifyCompletionSecond(id)
 
             stopForeground(STOP_FOREGROUND_REMOVE)
-
             stopSelf()
         }
 
@@ -50,7 +46,7 @@ class NotificationService : Service() {
         val channelId = createNotificationChannel()
         val notificationBuilder = getNotificationBuilder(pendingIntent, channelId)
 
-        startForeground(NOTIFICATION_ID, notificationBuilder.build())
+        startForeground(NOTIFICATION_ID_SECOND, notificationBuilder.build())
 
         return notificationBuilder
     }
@@ -66,9 +62,9 @@ class NotificationService : Service() {
     }
 
     private fun createNotificationChannel(): String {
-        val channelId = "001"
+        val channelId = "002"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelName = "001 Channel"
+            val channelName = "002 Channel"
             val channelPriority = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(channelId, channelName, channelPriority)
 
@@ -79,40 +75,39 @@ class NotificationService : Service() {
         return channelId
     }
 
-    // Membangun notifikasi
     private fun getNotificationBuilder(pendingIntent: PendingIntent, channelId: String):
             NotificationCompat.Builder {
         return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Second worker process is done")
-            .setContentText("Check it out!")
+            .setContentTitle("Third worker process is done")
+            .setContentText("Final task starting!")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
-            .setTicker("Second worker process is done, check it out!")
+            .setTicker("Third worker process is done, final task!")
             .setOngoing(true)
     }
 
-    private fun countDownFromTenToZero(notificationBuilder: NotificationCompat.Builder) {
+    private fun countDownFromFiveToZero(notificationBuilder: NotificationCompat.Builder) {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        for (i in 10 downTo 0) {
-            Thread.sleep(1000L) // Jeda 1 detik
-            notificationBuilder.setContentText("$i seconds until last warning")
-            notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
+        for (i in 5 downTo 0) {
+            Thread.sleep(1000L)
+            notificationBuilder.setContentText("$i seconds until final completion")
+            notificationManager.notify(NOTIFICATION_ID_SECOND, notificationBuilder.build())
         }
     }
 
-    private fun notifyCompletion(id: String) {
+    private fun notifyCompletionSecond(id: String) {
         Handler(Looper.getMainLooper()).post {
-            mutableID.value = id
+            mutableIDSecond.value = id
         }
     }
 
     companion object {
-        const val NOTIFICATION_ID = 0xCA7
-        const val EXTRA_ID = "Id"
+        const val NOTIFICATION_ID_SECOND = 0xCA8
+        const val EXTRA_ID_SECOND = "IdSecond"
 
-        private val mutableID = MutableLiveData<String>()
-        val trackingCompletion: LiveData<String> = mutableID
+        private val mutableIDSecond = MutableLiveData<String>()
+        val trackingCompletionSecond: LiveData<String> = mutableIDSecond
     }
 }

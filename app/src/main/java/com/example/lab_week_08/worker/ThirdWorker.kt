@@ -6,7 +6,7 @@ import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 
-class SecondWorker(context: Context, workerParams: WorkerParameters) :
+class ThirdWorker(context: Context, workerParams: WorkerParameters) :
     Worker(context, workerParams) {
 
     companion object {
@@ -19,7 +19,7 @@ class SecondWorker(context: Context, workerParams: WorkerParameters) :
             val id = inputData.getString(INPUT_DATA_ID)
 
             Thread.sleep(3000L)
-            Log.d("SecondWorker", "Process 2 done for ID: $id") // Pesan log diubah
+            Log.d("ThirdWorker", "Process 3 done for ID: $id") // Pesan log diubah
 
             val outputData = Data.Builder()
                 .putString(OUTPUT_DATA_ID, id)
@@ -28,7 +28,7 @@ class SecondWorker(context: Context, workerParams: WorkerParameters) :
             return Result.success(outputData)
 
         } catch (e: Exception) {
-            Log.e("SecondWorker", "Error in SecondWorker", e)
+            Log.e("ThirdWorker", "Error in ThirdWorker", e)
             return Result.failure()
         }
     }

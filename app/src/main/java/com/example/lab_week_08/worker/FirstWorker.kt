@@ -16,19 +16,15 @@ class FirstWorker(context: Context, workerParams: WorkerParameters) :
 
     override fun doWork(): Result {
         try {
-            // Get the parameter input
             val id = inputData.getString(INPUT_DATA_ID)
 
-            // Sleep the process for 3 seconds
             Thread.sleep(3000L)
             Log.d("FirstWorker", "Process 1 done for ID: $id")
 
-            // Build the output based on process result
             val outputData = Data.Builder()
                 .putString(OUTPUT_DATA_ID, id)
                 .build()
 
-            // Return the output
             return Result.success(outputData)
 
         } catch (e: Exception) {
